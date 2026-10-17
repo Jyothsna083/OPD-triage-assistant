@@ -1,0 +1,253 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Live Patient Queue{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-title">Total In Waiting Queue</span>
+    <span class="stat-val">{{ queue|length }}</span>
+    <span class="stat-desc">Walk-in patients currently awaiting care</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-title">Critical Urgency (L1 & L2)</span>
+    <span class="stat-val" style="color: #dc2626;">{{ critical_count }}</span>
+    <span class="stat-desc">Resuscitation & Emergent patients</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-title">Needs Immediate Nurse Review</span>
+    <span class="stat-val" style="color: #9333ea;">{{ abstain_count }}</span>
+    <span class="stat-desc">Corrupt or missing vitals (Abstained)</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-title">Emergency Wait Reduction</span>
+    <span class="stat-val" style="color: #16a34a;">89.6%</span>
+    <span class="stat-desc">6.4 min vs 62.1 min under FCFS</span>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-header">
+    <div class="table-title">Live Triage Queue (Prioritized by Clinical Urgency)</div>
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="Search patient, complaint, ID..." onkeyup="filterQueue()" class="table-select" style="min-width: 230px;">
+      <select id="deptFilter" onchange="filterQueue()" class="table-select">
+        <option value="all">All Departments</option>
+        <option value="Emergency">Emergency</option>
+        <option value="General Medicine">General Medicine</option>
+        <option value="Pediatrics">Pediatrics</option>
+        <option value="Orthopedics">Orthopedics</option>
+        <option value="Surgery">Surgery</option>
+        <option value="Gastroenterology">Gastroenterology</option>
+        <option value="Pulmonology">Pulmonology</option>
+        <option value="Dermatology">Dermatology</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Priority &amp; Level</th>
+          <th>Patient</th>
+          <th>Vitals</th>
+          <th>Chief Complaint &amp; Red Flags</th>
+          <th>Routing Dept</th>
+          <th>AI vs Final</th>
+          <th style="min-width: 190px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="queueTableBody">
+        {% for p in queue %}
+        <tr data-dept="{{ p.final_department }}" id="row-{{ p.patient_id }}">
+          <td>
+            {% if p.ai_abstain == 1 and p.nurse_reviewed == 0 %}
+              <span class="badge badge-ab">CANNOT ASSESS &mdash; SEND TO NURSE NOW</span>
+            {% elif p.final_triage_level == 1 %}
+              <span class="badge badge-l1">LEVEL 1 &bull; RESUSCITATION</span>
+            {% elif p.final_triage_level == 2 %}
+              <span class="badge badge-l2">LEVEL 2 &bull; EMERGENT</span>
+            {% elif p.final_triage_level == 3 %}
+              <span class="badge badge-l3">LEVEL 3 &bull; URGENT</span>
+            {% elif p.final_triage_level == 4 %}
+              <span class="badge badge-l4">LEVEL 4 &bull; LESS URGENT</span>
+            {% else %}
+              <span class="badge badge-l5">LEVEL 5 &bull; NON-URGENT</span>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ p.name }}</strong><br>
+            <small style="color: var(--text-muted);">{{ p.patient_id }} &bull; {{ p.age|round|int if p.age else '?' }}y / {{ p.sex }}</small>
+          </td>
+          <td>
+            <small>
+              BP: <strong>{{ p.bp_systolic|round|int if p.bp_systolic else '--' }}/{{ p.bp_diastolic|round|int if p.bp_diastolic else '--' }}</strong><br>
+              HR: <strong>{{ p.pulse|round|int if p.pulse else '--' }}</strong> | SpO2: <strong>{{ p.spo2|round|int if p.spo2 else '--' }}%</strong><br>
+              Temp: <strong>{{ p.temp_c|round(1) if p.temp_c else '--' }}&deg;C</strong>
+            </small>
+          </td>
+          <td style="max-width: 320px;">
+            <div>{{ p.chief_complaint }}</div>
+            {% if p.detected_red_flags %}
+              <div style="margin-top: 0.35rem;">
+                {% for rf in p.detected_red_flags %}
+                  <span style="display: inline-block; background-color: #fee2e2; color: #991b1b; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 4px; margin-right: 0.25rem;">
+                    &bull; {{ rf }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ p.final_department }}</strong>
+          </td>
+          <td>
+            <small>
+              AI: Level {{ p.ai_triage_level }} ({{ p.ai_department }})<br>
+              {% if p.nurse_reviewed == 1 %}
+                <span style="color: #16a34a; font-weight: 700;">&check; Overridden</span>
+              {% else %}
+                <span style="color: var(--text-muted);">AI Assigned</span>
+              {% endif %}
+            </small>
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.35rem; align-items: center;">
+              <button type="button" 
+                      class="btn-primary" 
+                      style="padding: 0.42rem 0.85rem; font-size: 0.825rem; cursor: pointer; white-space: nowrap;"
+                      onclick="openOverrideModal({
+                        patientId: '{{ p.patient_id }}',
+                        name: '{{ p.name|replace('\'', '\\\'') }}',
+                        age: '{{ p.age|round|int if p.age else '?' }}',
+                        sex: '{{ p.sex }}',
+                        bp: '{{ p.bp_systolic|round|int if p.bp_systolic else '--' }}/{{ p.bp_diastolic|round|int if p.bp_diastolic else '--' }}',
+                        pulse: '{{ p.pulse|round|int if p.pulse else '--' }}',
+                        spo2: '{{ p.spo2|round|int if p.spo2 else '--' }}',
+                        temp: '{{ p.temp_c|round(1) if p.temp_c else '--' }}',
+                        complaint: '{{ p.chief_complaint|replace('\'', '\\\'')|replace('\n', ' ') }}',
+                        aiLevel: '{{ p.ai_triage_level }}',
+                        aiDept: '{{ p.ai_department }}',
+                        finalLevel: '{{ p.final_triage_level }}',
+                        finalDept: '{{ p.final_department }}',
+                        assessmentId: '{{ p.assessment_id }}',
+                        redFlags: {{ p.detected_red_flags|tojson }}
+                      })">
+                Review &amp; Override
+              </button>
+              <a href="{{ url_for('patient_detail', patient_id=p.patient_id) }}" 
+                 class="preset-btn" 
+                 style="padding: 0.42rem 0.65rem; font-size: 0.8rem; text-decoration: none; white-space: nowrap;"
+                 title="View Full Clinical Chart">
+                Details &rarr;
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Interactive Review & Override Modal -->
+<div id="overrideModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalPatientName">Patient Review</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);" id="modalPatientMeta">--</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeOverrideModal()">&times;</button>
+    </div>
+
+    <form id="modalOverrideForm" onsubmit="return submitModalOverride(event)">
+      <div class="modal-body">
+        <!-- Vitals Quick Bar -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; background: #f8fafc; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1rem; text-align: center;">
+          <div>
+            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">BLOOD PRESSURE</span>
+            <div style="font-size: 1rem; font-weight: 800;" id="modalVitalsBP">--</div>
+          </div>
+          <div>
+            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">HEART RATE</span>
+            <div style="font-size: 1rem; font-weight: 800;" id="modalVitalsHR">--</div>
+          </div>
+          <div>
+            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">SpO2 OXYGEN</span>
+            <div style="font-size: 1rem; font-weight: 800;" id="modalVitalsSpO2">--</div>
+          </div>
+          <div>
+            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">TEMPERATURE</span>
+            <div style="font-size: 1rem; font-weight: 800;" id="modalVitalsTemp">--</div>
+          </div>
+        </div>
+
+        <!-- Complaint & Red Flags -->
+        <div style="margin-bottom: 1rem;">
+          <label>Chief Complaint:</label>
+          <div id="modalComplaint" style="font-style: italic; background: #f1f5f9; padding: 0.65rem 0.85rem; border-radius: 6px; font-size: 0.95rem; margin-top: 0.25rem;">--</div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label>Detected Red Flags:</label>
+          <div id="modalRedFlagsContainer" style="margin-top: 0.25rem;">--</div>
+        </div>
+
+        <div style="background: #e0f2fe; border: 1px solid #bae6fd; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.25rem;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: #0369a1; text-transform: uppercase;">Current AI Recommendation:</span>
+          <div id="modalAiRecommendation" style="font-size: 1.05rem; font-weight: 800; color: #0284c7;">--</div>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--border); margin-bottom: 1.25rem;">
+
+        <!-- Override Inputs -->
+        <input type="hidden" id="modal_patient_id" name="patient_id">
+        <input type="hidden" id="modal_assessment_id" name="assessment_id">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div class="form-group">
+            <label for="modal_new_level">Override Urgency Level *</label>
+            <select id="modal_new_level" name="new_level" required>
+              <option value="1">Level 1 - Resuscitation (Immediate)</option>
+              <option value="2">Level 2 - Emergent (High Risk)</option>
+              <option value="3">Level 3 - Urgent</option>
+              <option value="4">Level 4 - Less Urgent</option>
+              <option value="5">Level 5 - Non-Urgent</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modal_new_dept">Override Department *</label>
+            <select id="modal_new_dept" name="new_dept" required>
+              {% for d in ["Emergency", "General Medicine", "Pediatrics", "Orthopedics", "Surgery", "Gastroenterology", "Pulmonology", "Dermatology", "ENT", "Ophthalmology", "Dental", "Obstetrics & Gynecology"] %}
+                <option value="{{ d }}">{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="modal_nurse_name">Authorized Nurse Staff Name / ID *</label>
+          <input type="text" id="modal_nurse_name" name="nurse_name" required value="Staff Nurse Priya (RN-104)">
+        </div>
+
+        <div class="form-group">
+          <label for="modal_override_reason">Mandatory Clinical Rationale for Override *</label>
+          <textarea id="modal_override_reason" name="override_reason" rows="2" required placeholder="State clinical justification (e.g. Patient appears pale and diaphoretic on bedside observation)"></textarea>
+          <small style="color: var(--text-muted); font-size: 0.75rem;">Minimum 5 characters required for hospital audit compliance.</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <a id="modalDetailLink" href="#" class="preset-btn" style="text-decoration: none;">View Full Patient Chart &rarr;</a>
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn-secondary" onclick="closeOverrideModal()">Cancel</button>
+          <button type="submit" id="modalSubmitBtn" class="btn-primary">&check; Confirm &amp; Save Override</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+﻿hospital_id,name,town,district,type
+H01,Government General Hospital (RIMS) Srikakulam,Srikakulam,Srikakulam,Teaching/General
+H02,Government General Hospital Vizianagaram,Vizianagaram,Vizianagaram,Teaching/General
+H03,King George Hospital,Visakhapatnam,Visakhapatnam,Teaching/General
+H04,Government General Hospital Rajahmundry,Rajahmundry,East Godavari,Teaching/General
+H05,Government General Hospital Kakinada,Kakinada,Kakinada,Teaching/General
+H06,Government General Hospital Eluru,Eluru,Eluru,Teaching/General
+H07,NTR Government General Hospital,Vijayawada,NTR,Teaching/General
+H08,Government General Hospital Machilipatnam,Machilipatnam,Krishna,Teaching/General
+H09,Government General Hospital Guntur,Guntur,Guntur,Teaching/General
+H10,Government General Hospital Ongole,Ongole,Prakasam,Teaching/General
+H11,Government General Hospital Nellore,Nellore,Nellore,Teaching/General
+H12,Government General Hospital Anantapur,Anantapur,Anantapur,Teaching/General
+H13,SVRR Government General Hospital,Tirupati,Tirupati,Teaching/General
+H14,Government General Hospital Kadapa,Kadapa,YSR Kadapa,Teaching/General
+H15,Government General Hospital Kurnool,Kurnool,Kurnool,Teaching/General
+H16,District Hospital Nandyal,Nandyal,Nandyal,District
+H17,District Hospital Tekkali,Tekkali,Srikakulam,District
+H18,District Hospital Paderu,Paderu,Alluri Sitharama Raju,District
+H19,District Hospital Anakapalli,Anakapalli,Anakapalli,District
+H20,District Hospital Tanuku,Tanuku,West Godavari,District
+H21,District Hospital Tenali,Tenali,Guntur,District
+H22,District Hospital Markapuram,Markapuram,Markapuram,District
+H23,District Hospital Atmakur,Atmakur,Nellore,District
+H24,District Hospital Hindupur,Hindupur,Sri Sathya Sai,District
+H25,District Hospital Madanapalle,Madanapalle,Annamayya,District
+H26,District Hospital Chittoor,Chittoor,Chittoor,District
+H27,District Hospital Proddatur,Proddatur,YSR Kadapa,District
+H28,Area Hospital Palakonda,Palakonda,Parvathipuram Manyam,Area
+H29,Area Hospital Rajam,Rajam,Vizianagaram,Area
+H30,Area Hospital Araku,Araku,Alluri Sitharama Raju,Area
+H31,Area Hospital Narsipatnam,Narsipatnam,Anakapalli,Area
+H32,Area Hospital Amalapuram,Amalapuram,Konaseema,Area
+H33,Area Hospital Tuni,Tuni,Kakinada,Area
+H34,Area Hospital Jangareddygudem,Jangareddygudem,Eluru,Area
+H35,Area Hospital Nuzvid,Nuzvid,Eluru,Area
+H36,Area Hospital Tadepalligudem,Tadepalligudem,West Godavari,Area
+H37,Area Hospital Gudivada,Gudivada,Krishna,Area

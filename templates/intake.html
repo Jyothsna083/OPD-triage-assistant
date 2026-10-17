@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Rapid Patient Intake{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h2 style="font-size: 1.5rem; font-weight: 800;">Rapid Patient Intake (&le; 60 Seconds)</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Automated physiological vitals cleaning, multilingual clinical NLP, and PulseGuard AI safety escalation.</p>
+  </div>
+</div>
+
+<div class="form-card">
+  <div style="margin-bottom: 0.75rem;">
+    <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">QUICK CLINICAL DEMO PRESETS:</span>
+  </div>
+  <div class="presets-container">
+    <button type="button" class="preset-btn" onclick="loadPreset('acs')">&bull; Critical ACS Chest Pain (L2 Override)</button>
+    <button type="button" class="preset-btn" onclick="loadPreset('stroke')">&bull; Acute Stroke (L2 Code Stroke)</button>
+    <button type="button" class="preset-btn" onclick="loadPreset('resp_distress')">&bull; Severe Hypoxic Distress (SpO2 87%)</button>
+    <button type="button" class="preset-btn" onclick="loadPreset('pediatric_fever')">&bull; Pediatric Febrile Lethargy</button>
+    <button type="button" class="preset-btn" onclick="loadPreset('abstain_vitals')">&bull; Corrupt Vitals (Abstention Trigger)</button>
+    <button type="button" class="preset-btn" onclick="loadPreset('mild_cold')">&bull; Mild Cold (L5 Routine OPD)</button>
+  </div>
+
+  <form method="POST" action="{{ url_for('intake') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="name">Patient Full Name / MRN *</label>
+        <input type="text" id="name" name="name" required placeholder="e.g. Ramesh Sharma">
+      </div>
+
+      <div class="form-group">
+        <label for="age">Age (Years) *</label>
+        <input type="number" step="0.1" id="age" name="age" required placeholder="e.g. 45">
+      </div>
+
+      <div class="form-group">
+        <label for="sex">Biological Sex *</label>
+        <select id="sex" name="sex" required>
+          <option value="" disabled selected>-- Select Sex --</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <!-- Single Blood Pressure Section -->
+      <div class="form-group">
+        <label for="bp">Blood Pressure (mmHg)</label>
+        <input type="text" id="bp" name="bp" placeholder="e.g. 120/80" oninput="syncBpFields(this.value)">
+        <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 3px;">Format: Systolic/Diastolic (e.g. 120/80)</small>
+        <input type="hidden" id="bp_systolic" name="bp_systolic">
+        <input type="hidden" id="bp_diastolic" name="bp_diastolic">
+      </div>
+
+      <div class="form-group">
+        <label for="pulse">Heart Rate / Pulse (bpm)</label>
+        <input type="number" id="pulse" name="pulse" placeholder="e.g. 76">
+      </div>
+
+      <div class="form-group">
+        <label for="temp_c">Body Temp (&deg;C or &deg;F)</label>
+        <input type="number" step="0.1" id="temp_c" name="temp_c" placeholder="e.g. 37.0 or 98.6">
+      </div>
+
+      <div class="form-group">
+        <label for="spo2">Oxygen Saturation SpO2 (%)</label>
+        <input type="number" id="spo2" name="spo2" placeholder="e.g. 98 (&lt;90 triggers critical override)">
+      </div>
+
+      <div class="form-group full-width">
+        <label for="chief_complaint">Free-Text Chief Complaint (English, Hinglish, Telugu-English) *</label>
+        <textarea id="chief_complaint" name="chief_complaint" rows="3" required placeholder="Describe chief complaint, onset, duration, and associated symptoms..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="known_conditions">Known Chronic Medical Conditions</label>
+        <input type="text" id="known_conditions" name="known_conditions" placeholder="e.g. Hypertension, Diabetes, Asthma, CAD">
+      </div>
+
+      <div class="form-group">
+        <label for="medication_list">Current Medication List</label>
+        <input type="text" id="medication_list" name="medication_list" placeholder="e.g. Amlodipine 5mg, Metformin 500mg">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
+      <a href="{{ url_for('index') }}" class="preset-btn" style="text-decoration: none; padding: 0.65rem 1.25rem;">Cancel</a>
+      <button type="submit" class="btn-primary" style="padding: 0.65rem 1.75rem; font-size: 1rem;">
+        &check; Run PulseGuard AI &amp; Add to Queue
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

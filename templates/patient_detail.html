@@ -1,0 +1,232 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Patient Assessment - {{ patient.name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <h2 style="font-size: 1.6rem; font-weight: 800;">{{ patient.name }}</h2>
+      <span style="color: var(--text-muted); font-size: 1rem;">({{ patient.patient_id }})</span>
+      {% if patient.assessment %}
+        {% if patient.assessment.ai_abstain == 1 and patient.assessment.nurse_reviewed == 0 %}
+          <span class="badge badge-ab">CANNOT ASSESS &mdash; SEND TO NURSE NOW</span>
+        {% elif patient.assessment.final_triage_level == 1 %}
+          <span class="badge badge-l1">LEVEL 1 &bull; RESUSCITATION</span>
+        {% elif patient.assessment.final_triage_level == 2 %}
+          <span class="badge badge-l2">LEVEL 2 &bull; EMERGENT</span>
+        {% elif patient.assessment.final_triage_level == 3 %}
+          <span class="badge badge-l3">LEVEL 3 &bull; URGENT</span>
+        {% elif patient.assessment.final_triage_level == 4 %}
+          <span class="badge badge-l4">LEVEL 4 &bull; LESS URGENT</span>
+        {% else %}
+          <span class="badge badge-l5">LEVEL 5 &bull; NON-URGENT</span>
+        {% endif %}
+      {% endif %}
+    </div>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+      Age: <strong>{{ patient.age|round|int if patient.age else 'Unknown' }} yrs</strong> &bull;
+      Sex: <strong>{{ patient.sex }}</strong> &bull;
+      Department: <strong>{{ patient.assessment.final_department if patient.assessment else 'Unassigned' }}</strong> &bull;
+      Arrival: <strong>{{ patient.created_at }}</strong>
+    </p>
+  </div>
+  <div>
+    <a href="{{ url_for('index') }}" class="preset-btn" style="text-decoration: none; padding: 0.5rem 1rem;">&larr; Back to Patient Queue</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <!-- Left Column: Clinical Intake & AI Decision Engine -->
+  <div>
+    <!-- Vitals Card -->
+    <div class="card">
+      <div class="card-title">Physiological Vital Signs</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+        <div>
+          <span class="stat-title">Blood Pressure</span>
+          <div style="font-size: 1.2rem; font-weight: 800;">
+            {{ patient.bp_systolic|round|int if patient.bp_systolic else '--' }}/{{ patient.bp_diastolic|round|int if patient.bp_diastolic else '--' }}
+            <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">mmHg</span>
+          </div>
+          {% if patient.bp_systolic == 0 or patient.bp_diastolic == 0 %}
+            <span class="vital-tag vital-tag-invalid">Zero/Invalid BP</span>
+          {% elif patient.bp_diastolic and patient.bp_systolic and patient.bp_diastolic > patient.bp_systolic %}
+            <span class="vital-tag vital-tag-fixed">Swapped Fixed</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <span class="stat-title">Heart Rate</span>
+          <div style="font-size: 1.2rem; font-weight: 800;">
+            {{ patient.pulse|round|int if patient.pulse else '--' }}
+            <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">bpm</span>
+          </div>
+          {% if patient.pulse and (patient.pulse > 130 or patient.pulse < 40) %}
+            <span class="vital-tag vital-tag-invalid">Critical Rate</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <span class="stat-title">Temperature</span>
+          <div style="font-size: 1.2rem; font-weight: 800;">
+            {{ patient.temp_c|round(1) if patient.temp_c else '--' }}
+            <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">&deg;C</span>
+          </div>
+          {% if patient.temp_c and patient.temp_c >= 90 %}
+            <span class="vital-tag vital-tag-fixed">&deg;F Converted</span>
+          {% elif patient.temp_c and patient.temp_c >= 39.0 %}
+            <span class="vital-tag vital-tag-invalid">High Fever</span>
+          {% endif %}
+        </div>
+
+        <div>
+          <span class="stat-title">SpO2 (Oxygen)</span>
+          <div style="font-size: 1.2rem; font-weight: 800;">
+            {{ patient.spo2|round|int if patient.spo2 else '--' }}%
+          </div>
+          {% if patient.spo2 and patient.spo2 < 90 %}
+            <span class="vital-tag vital-tag-invalid">Severe Hypoxia</span>
+          {% elif patient.spo2 and patient.spo2 < 95 %}
+            <span class="vital-tag vital-tag-fixed">Moderate Hypoxia</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Chief Complaint & NLP Card -->
+    <div class="card">
+      <div class="card-title">Chief Complaint &amp; Multilingual Clinical NLP</div>
+      <div style="background-color: #f8fafc; padding: 1rem; border-radius: 6px; border: 1px solid var(--border); font-size: 1.05rem; font-style: italic; margin-bottom: 1rem;">
+        &ldquo;{{ patient.chief_complaint }}&rdquo;
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <span class="stat-title">Known Conditions</span>
+          <p style="font-size: 0.9rem;">{{ patient.known_conditions if patient.known_conditions else 'None documented' }}</p>
+        </div>
+        <div>
+          <span class="stat-title">Current Medications</span>
+          <p style="font-size: 0.9rem;">{{ patient.medication_list if patient.medication_list else 'None documented' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI & Safety Engine Breakdown Card -->
+    {% if patient.assessment %}
+    <div class="card">
+      <div class="card-title">PulseGuard AI vs Mandatory Safety Override Engine</div>
+
+      {% if patient.assessment.clinical_rationale %}
+        <div style="margin-bottom: 1rem;">
+          <strong style="color: #991b1b; font-size: 0.9rem;">MANDATORY CLINICAL SAFETY ESCALATIONS TRIGGERED:</strong>
+          <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+            {% for exp in patient.assessment.clinical_rationale %}
+              <li style="color: #991b1b; font-size: 0.9rem; margin-bottom: 0.25rem; font-weight: 600;">{{ exp }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+        <div class="alert-banner alert-info" style="margin-bottom: 1rem;">
+          No critical red flag triggers detected. Recommendation generated by Cost-Sensitive ML Model.
+        </div>
+      {% endif %}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 6px; border: 1px solid var(--border);">
+        <div>
+          <span class="stat-title">Raw ML Model Recommendation</span>
+          <div style="font-size: 1.1rem; font-weight: 700;">
+            Level {{ patient.assessment.ai_triage_level }} &bull; {{ patient.assessment.ai_department }}
+          </div>
+        </div>
+        <div>
+          <span class="stat-title">Final Recommendation (Post-Override)</span>
+          <div style="font-size: 1.1rem; font-weight: 700; color: #0284c7;">
+            Level {{ patient.assessment.final_triage_level }} &bull; {{ patient.assessment.final_department }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Column: Nurse Override Form & Audit Trail -->
+  <div>
+    <!-- Nurse Override Card -->
+    <div class="card" style="border-top: 4px solid var(--primary);">
+      <div class="card-title">Authorized Clinical Override</div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Hospital policy permits clinical staff to override AI recommendations. A clinical reason is strictly mandatory for auditing.
+      </p>
+
+      {% if patient.assessment %}
+      <form method="POST" action="{{ url_for('override') }}" onsubmit="return validateOverrideForm(event)">
+        <input type="hidden" name="patient_id" value="{{ patient.patient_id }}">
+        <input type="hidden" name="assessment_id" value="{{ patient.assessment.assessment_id }}">
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="nurse_name">Staff Member Name / ID *</label>
+          <input type="text" id="nurse_name" name="nurse_name" required placeholder="e.g. Staff Nurse Priya, RN" value="Staff Nurse Priya (RN-104)">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="new_level">Override Triage Urgency Level *</label>
+          <select id="new_level" name="new_level" required>
+            <option value="1" {% if patient.assessment.final_triage_level == 1 %}selected{% endif %}>Level 1 - Resuscitation (Immediate)</option>
+            <option value="2" {% if patient.assessment.final_triage_level == 2 %}selected{% endif %}>Level 2 - Emergent (High Risk)</option>
+            <option value="3" {% if patient.assessment.final_triage_level == 3 %}selected{% endif %}>Level 3 - Urgent</option>
+            <option value="4" {% if patient.assessment.final_triage_level == 4 %}selected{% endif %}>Level 4 - Less Urgent</option>
+            <option value="5" {% if patient.assessment.final_triage_level == 5 %}selected{% endif %}>Level 5 - Non-Urgent</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="new_dept">Override Assigned Department *</label>
+          <select id="new_dept" name="new_dept" required>
+            {% for d in ["Emergency", "General Medicine", "Pediatrics", "Orthopedics", "Surgery", "Gastroenterology", "Pulmonology", "Dermatology", "ENT", "Ophthalmology", "Dental", "Obstetrics & Gynecology"] %}
+              <option value="{{ d }}" {% if patient.assessment.final_department == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label for="override_reason">Mandatory Clinical Rationale for Override *</label>
+          <textarea id="override_reason" name="override_reason" rows="3" required placeholder="State clinical justification (e.g. Patient appears clinically pale with diaphoresis despite stable vitals)"></textarea>
+          <small style="color: var(--text-muted); font-size: 0.75rem;">Minimum 5 characters required for hospital audit compliance.</small>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.75rem;">
+          &check; Confirm &amp; Save Clinical Override
+        </button>
+      </form>
+      {% endif %}
+    </div>
+
+    <!-- Audit Trail Card -->
+    <div class="card">
+      <div class="card-title">Patient Audit History</div>
+      {% if patient.overrides %}
+        <div style="font-size: 0.85rem;">
+          {% for o in patient.overrides %}
+            <div style="padding: 0.65rem 0; border-bottom: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #334155;">
+                <span>{{ o.nurse_name }}</span>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">{{ o.created_at }}</span>
+              </div>
+              <div style="color: #0284c7; font-weight: 700; margin: 0.2rem 0;">
+                Level {{ o.previous_level }} ({{ o.previous_dept }}) &rarr; Level {{ o.new_level }} ({{ o.new_dept }})
+              </div>
+              <div style="color: #64748b; font-style: italic;">
+                &ldquo;{{ o.reason }}&rdquo;
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="font-size: 0.85rem; color: var(--text-muted);">No staff overrides recorded for this patient. Operating on original AI recommendation.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

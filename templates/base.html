@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PulseGuard AI{% endblock %} | Intelligent OPD Triage &amp; Clinical Safeguard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Top Global Facility Bar -->
+  <div style="background-color: #0b1329; color: #94a3b8; padding: 0.35rem 2rem; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="color: #38bdf8; font-weight: 700;">ACTIVE FACILITY:</span>
+      {% if current_hospital %}
+        <span style="color: #ffffff; font-weight: 700;">{{ current_hospital.name }} ({{ current_hospital.code }}) &bull; {{ current_hospital.city }}</span>
+      {% else %}
+        <span style="color: #ffffff;">Network Central Gateway</span>
+      {% endif %}
+      <span style="background: #1e293b; color: #38bdf8; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.7rem;">2 Doctors on Duty</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="{{ url_for('landing') }}" style="color: #94a3b8; text-decoration: none; font-size: 0.75rem; border: 1px solid #334155; padding: 0.15rem 0.5rem; border-radius: 4px; transition: color 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#94a3b8'">&larr; Landing Page</a>
+      {% if current_user %}
+        <span style="color: #cbd5e1;">Logged in as: <strong style="color: #ffffff;">{{ current_user.full_name }}</strong> ({{ current_user.role }})</span>
+        <a href="{{ url_for('logout') }}" style="color: #ef4444; text-decoration: none; font-weight: 700; font-size: 0.75rem; border: 1px solid #7f1d1d; padding: 0.15rem 0.5rem; border-radius: 4px;">Sign Out</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" style="color: #38bdf8; text-decoration: none; font-weight: 700;">Staff Login &rarr;</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <header class="navbar">
+    <a href="{{ url_for('landing') }}" class="nav-brand" title="PulseGuard AI Home">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <span>PulseGuard <span style="color: #38bdf8;">AI</span></span>
+      <span class="brand-badge">Zero-Delay Triage</span>
+    </a>
+    <nav class="nav-links">
+      <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        Patient Queue
+      </a>
+      <a href="{{ url_for('intake') }}" class="nav-link {% if request.endpoint == 'intake' %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        New Intake
+      </a>
+      <a href="{{ url_for('simulation') }}" class="nav-link {% if request.endpoint == 'simulation' %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Queue Simulation
+      </a>
+      <a href="{{ url_for('audit') }}" class="nav-link {% if request.endpoint == 'audit' %}active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Audit Trail
+      </a>
+      
+      <!-- Facility Switcher Dropdown in Nav -->
+      {% if all_hospitals %}
+        <div style="position: relative; display: inline-block;">
+          <select onchange="window.location.href='/switch-hospital/' + this.value" class="table-select facility-nav-select" title="Switch active government hospital">
+            {% for h in all_hospitals %}
+              <option value="{{ h.hospital_id }}" {% if current_hospital and current_hospital.hospital_id == h.hospital_id %}selected{% endif %}>
+                🏥 {{ h.code }}: {{ h.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      <a href="{{ url_for('intake') }}" class="nav-btn">+ Quick Triage Intake</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert-banner alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <p><strong>PulseGuard AI</strong> &bull; Multi-Hospital OPD Triage Platform &bull; Connected to {{ all_hospitals|length if all_hospitals else '5' }} Public Healthcare Facilities &bull; Asymmetric Safety Override Layer Active</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

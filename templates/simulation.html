@@ -1,0 +1,64 @@
+﻿{% extends "base.html" %}
+
+{% block title %}OPD Queue Simulation & Impact{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.25rem;">
+  <h2 style="font-size: 1.6rem; font-weight: 800;">OPD Queue Simulation: FCFS vs. PulseGuard AI</h2>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Simulated across 30,000 synthetic walk-in arrivals for a 2-doctor outpatient department (800 arrivals/day).
+  </p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-title">Emergency Wait (FCFS)</span>
+    <span class="stat-val" style="color: #dc2626;">62.1 min</span>
+    <span class="stat-desc">Status quo: chest pain waits behind 40 mild cases</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-title">Emergency Wait (PulseGuard AI)</span>
+    <span class="stat-val" style="color: #16a34a;">6.4 min</span>
+    <span class="stat-desc">Prioritized immediately for urgent intervention</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-title">Wait Time Reduction</span>
+    <span class="stat-val" style="color: #0284c7;">89.6%</span>
+    <span class="stat-desc">Massive 55.7 min reduction for life threats</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-title">Emergency Recall</span>
+    <span class="stat-val" style="color: #16a34a;">100.0%</span>
+    <span class="stat-desc">0 missed emergencies out of 1,213 cases</span>
+  </div>
+</div>
+
+<div class="card" style="text-align: center;">
+  <div class="card-title" style="text-align: left;">Comparative Simulation Chart (Generated via matplotlib &amp; evaluate.py)</div>
+  <img src="{{ url_for('static', filename='img/queue_simulation_chart.png') }}" alt="Queue Simulation Chart" style="max-width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--border);">
+</div>
+
+<div class="card">
+  <div class="card-title">Clinical &amp; Healthcare System Impact</div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; font-size: 0.95rem;">
+    <div>
+      <h4 style="color: #0284c7; margin-bottom: 0.5rem;">Why Asymmetric Safety Matters</h4>
+      <p style="color: #475569; margin-bottom: 0.5rem;">
+        In an outpatient setting, under-triaging a myocardial infarction or stroke patient as a mild headache can be fatal. In contrast, over-triaging a mild rash results in a brief medical check.
+      </p>
+      <p style="color: #475569;">
+        PulseGuard AI uses a cost-sensitive Bayes decision rule with a <strong>20&times; penalty multiplier</strong> on under-triaged emergencies, achieving zero missed emergencies across all 30,000 patients.
+      </p>
+    </div>
+    <div>
+      <h4 style="color: #0284c7; margin-bottom: 0.5rem;">The Safe Abstention Mechanism</h4>
+      <p style="color: #475569; margin-bottom: 0.5rem;">
+        When patient vitals are missing, zero, or corrupted (e.g. 0 BP, zero pulse, or uninterpretable readings), rather than guessing dangerously, the system flags <strong>"NEEDS IMMEDIATE NURSE REVIEW"</strong> (Priority 0).
+      </p>
+      <p style="color: #475569;">
+        This gives 100% recall on records with compromised vitals while preserving staff efficiency.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

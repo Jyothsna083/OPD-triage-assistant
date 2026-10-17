@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseGuard AI | Andhra Pradesh Health Network Portal Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .login-container {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .login-container {
+        grid-template-columns: 1fr;
+        margin: 1rem auto;
+      }
+    }
+    .login-hero {
+      padding: 0.5rem 0;
+    }
+    .network-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.825rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      border: 1px solid #bae6fd;
+    }
+    .hero-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      line-height: 1.15;
+      color: #0f172a;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.85rem;
+    }
+    .hero-desc {
+      font-size: 1rem;
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    .network-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      margin-top: 1.25rem;
+    }
+    .network-stat-box {
+      background: #ffffff;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .network-stat-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0284c7;
+    }
+    .network-stat-lbl {
+      font-size: 0.725rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .demo-accounts {
+      margin-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-top: 0.65rem;
+    }
+    .demo-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.65rem 0.75rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .demo-card:hover {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      transform: translateY(-1px);
+    }
+    .demo-name {
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .demo-role {
+      font-size: 0.75rem;
+      color: #0284c7;
+      font-weight: 600;
+    }
+    .demo-hosp {
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body style="background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 40%, #e0f2fe 100%);">
+  <header class="navbar">
+    <a href="{{ url_for('landing') }}" class="nav-brand" title="PulseGuard AI Home">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <span>PulseGuard <span style="color: #38bdf8;">AI</span></span>
+      <span class="brand-badge">AP Health Network</span>
+    </a>
+    <div style="display: flex; align-items: center; gap: 1.25rem;">
+      <a href="{{ url_for('landing') }}" style="color: #38bdf8; text-decoration: none; font-weight: 700; font-size: 0.85rem; border: 1px solid #0284c7; padding: 0.35rem 0.75rem; border-radius: 6px;">&larr; Landing Page</a>
+      <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">
+        37 Connected Government Hospitals &bull; Andhra Pradesh
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert-banner alert-{{ category }}" style="max-width: 1000px; margin: 1rem auto;">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="login-container">
+      <!-- Left Hero Banner -->
+      <div class="login-hero">
+        <div class="network-badge">
+          <span style="font-size: 1rem;">🏥</span> AP Government Hospital Triage Network
+        </div>
+        <h1 class="hero-title">Safe, Intelligent Outpatient Triage Across 37 Hospitals</h1>
+        <p class="hero-desc">
+          PulseGuard AI protects high-volume outpatient departments across Andhra Pradesh Teaching Hospitals, 
+          District Hospitals, and Area Hospitals with asymmetric clinical safety and zero-delay emergency escalation.
+        </p>
+
+        <div class="network-stats">
+          <div class="network-stat-box">
+            <div class="network-stat-val">37</div>
+            <div class="network-stat-lbl">AP Hospitals</div>
+          </div>
+          <div class="network-stat-box">
+            <div class="network-stat-val">100%</div>
+            <div class="network-stat-lbl">Emergency Recall</div>
+          </div>
+          <div class="network-stat-box">
+            <div class="network-stat-val">89.6%</div>
+            <div class="network-stat-lbl">Wait Time Cut</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Login Form Card -->
+      <div class="form-card" style="box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-radius: 12px; padding: 1.5rem;">
+        <div style="margin-bottom: 1.25rem;">
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a;">Hospital Staff Login</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Select your healthcare facility and sign in with staff credentials.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('login') }}">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="hospital_id">Select Government Hospital (37 Facilities) *</label>
+            <select id="hospital_id" name="hospital_id" required style="font-size: 0.875rem;">
+              <optgroup label="Teaching &amp; General Hospitals (H01 - H15)">
+                {% for h in hospitals if 'Teaching' in h.facility_type %}
+                  <option value="{{ h.hospital_id }}" {% if h.hospital_id == 'H07' %}selected{% endif %}>
+                    {{ h.hospital_id }}: {{ h.name }} ({{ h.district }})
+                  </option>
+                {% endfor %}
+              </optgroup>
+              <optgroup label="District Hospitals (H16 - H27)">
+                {% for h in hospitals if 'District' in h.facility_type %}
+                  <option value="{{ h.hospital_id }}">
+                    {{ h.hospital_id }}: {{ h.name }} ({{ h.district }})
+                  </option>
+                {% endfor %}
+              </optgroup>
+              <optgroup label="Area Hospitals (H28 - H37)">
+                {% for h in hospitals if 'Area' in h.facility_type %}
+                  <option value="{{ h.hospital_id }}">
+                    {{ h.hospital_id }}: {{ h.name }} ({{ h.district }})
+                  </option>
+                {% endfor %}
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="username">Staff Username / Medical ID *</label>
+            <input type="text" id="username" name="username" required placeholder="e.g. nurse.priya or dr.verma" value="nurse.priya">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="password">Password *</label>
+            <input type="password" id="password" name="password" required placeholder="Enter password" value="nurse123">
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+            &rarr; Sign In &amp; Access OPD Queue
+          </button>
+        </form>
+
+        <!-- Quick 1-Click Demo Logins -->
+        <div class="demo-accounts">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">
+            1-Click Instant Demo Login:
+          </span>
+          <div class="demo-grid">
+            <div class="demo-card" onclick="quickFillAndSubmit('nurse.priya', 'nurse123', 'H07')">
+              <div class="demo-name">👩‍⚕️ Nurse Priya Sharma</div>
+              <div class="demo-role">Triage Desk Lead</div>
+              <div class="demo-hosp">H07: NTR GGH Vijayawada</div>
+            </div>
+
+            <div class="demo-card" onclick="quickFillAndSubmit('dr.verma', 'doctor123', 'H07')">
+              <div class="demo-name">👨‍⚕️ Dr. Rajesh Verma</div>
+              <div class="demo-role">Emergency Medical Officer</div>
+              <div class="demo-hosp">H07: NTR GGH Vijayawada</div>
+            </div>
+
+            <div class="demo-card" onclick="quickFillAndSubmit('dr.vizag', 'doctor123', 'H03')">
+              <div class="demo-name">👨‍⚕️ Dr. Ravi Kumar</div>
+              <div class="demo-role">Chief Medical Officer</div>
+              <div class="demo-hosp">H03: KGH Visakhapatnam</div>
+            </div>
+
+            <div class="demo-card" onclick="quickFillAndSubmit('dr.tirupati', 'doctor123', 'H13')">
+              <div class="demo-name">👨‍⚕️ Dr. Suresh Reddy</div>
+              <div class="demo-role">Trauma &amp; Emergency Head</div>
+              <div class="demo-hosp">H13: SVRR GGH Tirupati</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>PulseGuard AI &bull; Andhra Pradesh Government Hospital Outpatient Triage Network &bull; 37 Connected Facilities &bull; Asymmetric Safety Active</p>
+  </footer>
+
+  <script>
+    function quickFillAndSubmit(u, p, h) {
+      document.getElementById('username').value = u;
+      document.getElementById('password').value = p;
+      const hSelect = document.getElementById('hospital_id');
+      for (let i = 0; i < hSelect.options.length; i++) {
+        if (hSelect.options[i].value === h) {
+          hSelect.selectedIndex = i;
+          break;
+        }
+      }
+      document.querySelector('form').submit();
+    }
+  </script>
+</body>
+</html>

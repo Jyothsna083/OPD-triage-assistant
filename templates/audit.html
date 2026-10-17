@@ -1,0 +1,48 @@
+﻿{% extends "base.html" %}
+
+{% block title %}System Audit Log{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.25rem;">
+  <h2 style="font-size: 1.6rem; font-weight: 800;">PulseGuard AI &bull; Clinical &amp; System Audit Trail</h2>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Immutable record of AI triage decisions, hard-coded safety overrides, and authorized nurse adjustments.
+  </p>
+</div>
+
+<div class="table-card">
+  <div class="table-header">
+    <div class="table-title">Recent System Events (Logged to SQLite)</div>
+  </div>
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Log ID</th>
+          <th>Action Type</th>
+          <th>Patient ID</th>
+          <th>Event Details &amp; Clinical Justification</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in audit_logs %}
+        <tr>
+          <td>#{{ a.log_id }}</td>
+          <td>
+            {% if a.action == 'NURSE_OVERRIDE' %}
+              <span class="badge" style="background-color: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d;">NURSE OVERRIDE</span>
+            {% else %}
+              <span class="badge badge-l4">NEW INTAKE</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ a.patient_id }}</strong></td>
+          <td style="font-size: 0.9rem;">{{ a.details }}</td>
+          <td style="color: var(--text-muted); font-size: 0.85rem;">{{ a.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
